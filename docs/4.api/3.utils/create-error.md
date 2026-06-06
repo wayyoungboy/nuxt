@@ -46,10 +46,33 @@ export default eventHandler(() => {
   throw createError({
     status: 404,
     statusText: 'Page Not Found',
+    data: {
+      path: '/api/error',
+    },
   })
 })
 ```
 
-In API routes, using `createError` by passing an object with a short `statusText` is recommended because it can be accessed on the client side. Otherwise, a `message` passed to `createError` on an API route will not propagate to the client. Alternatively, you can use the `data` property to pass data back to the client. In any case, always consider avoiding to put dynamic user input to the message to avoid potential security issues.
+In API routes, using `createError` by passing an object with a short `statusText` is recommended because it can be accessed on the
+client side.
+Otherwise, a `message` passed to `createError` on an API route will not propagate to the client.
+
+You can use the `data` property to pass additional structured data back to the client.
+The response body is the serialized H3 error, so when the API route is fetched with `useFetch` or `$fetch`, the custom data is
+nested inside the response body:
+
+```vue
+<script setup lang="ts">
+const { error } = await useFetch('/api/error')
+
+console.log(error.value?.data)
+// { statusCode: 404, statusMessage: 'Page Not Found', data: { path: '/api/error' } }
+
+console.log(error.value?.data?.data)
+// { path: '/api/error' }
+</script>
+```
+
+In any case, always consider avoiding putting dynamic user input in the message to avoid potential security issues.
 
 :read-more{to="/docs/4.x/getting-started/error-handling"}
